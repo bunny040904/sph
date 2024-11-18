@@ -1,0 +1,67 @@
+Practical 8
+
+8. Implement a Named PL/SQL Block: PL/SQL Stored Procedure and Stored Function.
+Write a Stored Procedure namely proc_Grade for the categorization of student. If marks scored by
+students in examination is <=1500 and marks>=990 then student will be placed in distinction
+category if marks scored are between 989 and 900 category is first class, if marks 899and 825
+category is Higher Second Class.
+Write a PL/SQLblock to use procedure created with above requirement.
+1. Stud_Marks(name, total_marks)
+2. Result(Roll,Name, Class).
+
+-----------------------------------------------------------------------
+
+
+CREATE TABLE student_grades (
+    student_id INT PRIMARY KEY,
+    marks_scored INT,
+    grade_category VARCHAR(50)
+);
+
+
+
+DELIMITER // -----This changes the statement delimiter temporarily to // so that the stored procedure can be created. The default delimiter ; is used to end each SQL statement, but since the procedure contains multiple statements, we need to change it to // to avoid confusion. Once the procedure is created, we set the delimiter back to ;.
+
+
+CREATE PROCEDURE proc_Grade(
+    IN student_id INT,
+    IN marks_scored INT,
+    OUT grade_category VARCHAR(50)
+)
+BEGIN
+    -- Check the marks and assign the appropriate category
+    IF marks_scored >= 990 AND marks_scored <= 1500 THEN
+        SET grade_category = 'Distinction';
+    ELSEIF marks_scored >= 900 AND marks_scored < 990 THEN
+        SET grade_category = 'First Class';
+    ELSEIF marks_scored >= 825 AND marks_scored < 900 THEN
+        SET grade_category = 'Higher Second Class';
+    ELSE
+        SET grade_category = 'No Category';
+    END IF;
+    
+ 
+END //
+
+DELIMITER ;
+
+
+
+SET @grade = '';
+CALL proc_Grade(1, 1450, @grade);
+INSERT INTO student_grades (student_id,  marks_scored, grade_category) 
+VALUES (1, 1450, @grade);
+
+---SET @grade = '';: This initializes the variable @grade, which will store the output value of the stored procedure (grade_category).
+
+---CALL proc_Grade(1, 1450, @grade);: This calls the stored procedure proc_Grade for a student with student_id = 1 and marks_scored = 1450.
+
+--The procedure will assign the appropriate grade to the @grade variable.
+Given that the marks are 1450 (which falls between 990 and 1500), the grade assigned will be 'Distinction'.
+INSERT INTO student_grades (student_id, marks_scored, grade_category):
+
+This inserts a new record into the student_grades table.
+student_id = 1, marks_scored = 1450, and the grade_category returned by the stored procedure (@grade) will be 'Distinction'.
+
+The stored procedure could be extended to handle more complex grading systems or additional conditions.
+The DELIMITER command is used for defining the procedure because it allows the use of multiple statements inside the procedure without causing syntax errors. This is specific to MySQL.

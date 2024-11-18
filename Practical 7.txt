@@ -1,0 +1,128 @@
+Practical 7
+7. Implement Unnamed PL/SQLcode block: Use of Control structure and Exception handling is
+mandatory.
+Consider Tables:
+1. Borrower(Roll_no, Name, Date of Issue, Name of Book, Status)
+2. Fine(Roll_no, Date, Amt)
+ Accept Roll_no and Name of Book from user.
+ Check the number of days (from date of issue).
+ If days are between 15 to 30 then fine amount will be Rs 5per day.
+ If no. of days>30, per day fine will be Rs 50 per day and for days less than 30, Rs. 5 per day.
+ After submitting the book, status will change from I to R.
+If condition of fine is true, then details will be stored into fine table.
+--------------------------------------------------------------------------------
+
+PL/SQL Code Block
+DECLARE
+ v_roll_no INT;
+ v_name_of_book VARCHAR2(100);
+ v_issue_date DATE;
+ v_status CHAR(1);
+ v_days INT;
+ v_fine_amount INT := 0;
+ v_current_date DATE := SYSDATE;
+ -- Custom exception for when no record is found
+ e_no_borrower EXCEPTION;
+---e_no_borrower: A custom exception to handle the case when no borrower record is found for the provided roll number and book name.
+
+
+BEGIN
+ -- Accept inputs for Roll_no and Name of Book
+ v_roll_no := &Roll_no;
+ v_name_of_book := '&Name_of_Book';
+---v_roll_no and v_name_of_book are assigned values from the user input (via substitution variables &Roll_no and &Name_of_Book).
+
+ -- Fetch Date of Issue and Status from Borrower table for given Roll_no and Book Name
+ SELECT Date_of_Issue, Status
+ INTO v_issue_date, v_status
+ FROM Borrower
+ WHERE Roll_no = v_roll_no
+ AND Name_of_Book = v_name_of_book
+ AND Status = 'I';
+---A SELECT INTO query retrieves the issue date (Date_of_Issue) and the current status (Status) of the book from the Borrower table.
+The query filters records where Roll_no matches the student's roll number, Name_of_Book matches the given book, and Status = 'I' (indicating the book is still issued).
+If no record matches these criteria, a NO_DATA_FOUND exception will be triggered.
+
+ -- Calculate the number of days since the book was issued
+ v_days := v_current_date - v_issue_date;
+ -- Determine fine based on the number of days
+ IF v_days > 15 AND v_days <= 30 THEN
+ v_fine_amount := (v_days - 15) * 5;
+ ELSIF v_days > 30 THEN
+ v_fine_amount := (30 - 15) * 5 + (v_days - 30) * 50;
+ END IF;
+----Calculate Days Late:
+The number of days (v_days) the book has been held is calculated by subtracting the issue date from the current date (v_current_date).
+Fine Calculation:
+If the book is returned between 16 and 30 days late, the fine is calculated at 5 per day (v_fine_amount := (v_days - 15) * 5).
+If the book is returned more than 30 days late, the fine is calculated as 5 per day for the first 30 days and 50 per day for the remaining days.
+
+ -- Update the Borrower table to mark the book as returned (Status 'R')
+ UPDATE Borrower
+ SET Status = 'R'
+ WHERE Roll_no = v_roll_no
+ AND Name_of_Book = v_name_of_book;
+
+ -- If there's a fine, insert a record in the Fine table
+ IF v_fine_amount > 0 THEN
+ INSERT INTO Fine (Roll_no, Date, Amt)
+ VALUES (v_roll_no, v_current_date, v_fine_amount);
+ END IF;
+----The UPDATE statement changes the status of the book from 'I' (Issued) to 'R' (Returned) in the Borrower table.
+Inserting Fine Record:
+If the calculated fine (v_fine_amount) is greater than 0, an entry is added to the Fine table to record the fine amount for the student.
+
+ DBMS_OUTPUT.PUT_LINE('Book returned successfully.');
+ DBMS_OUTPUT.PUT_LINE('Fine Amount: ' || v_fine_amount);
+---These DBMS_OUTPUT.PUT_LINE statements print a message indicating that the book has been returned successfully and displaying the calculated fine amount (if any).
+
+EXCEPTION
+ WHEN NO_DATA_FOUND THEN
+ RAISE e_no_borrower;
+ WHEN e_no_borrower THEN
+ DBMS_OUTPUT.PUT_LINE('Error: No matching borrower record found, or book 
+already returned.');
+
+ WHEN OTHERS THEN
+ DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLERRM);
+END;
+/
+----NO_DATA_FOUND: If no matching record is found (i.e., no borrower record with the provided roll number and book name with status 'I'), the custom exception e_no_borrower is raised.
+
+e_no_borrower: If the custom exception is raised, the error message is displayed, indicating that no matching borrower record exists or the book was already returned.
+
+OTHERS: A generic exception handler for any other unexpected errors. It will print the error message (SQLERRM) describing the issue.
+
+--------------------------------
+Explanation of the Code
+1. Input Acceptance: The PL/SQL block takes Roll_no and Name_of_Book as input.
+2. Data Retrieval: It retrieves the Date_of_Issue and Status of the book using 
+Roll_no and Name_of_Book from the Borrower table. The Status is checked to 
+ensure the book is issued (Status = 'I').
+3. Date Calculation and Fine Determination:
+• The difference in days between SYSDATE and Date_of_Issue is calculated.
+• If days are between 15 and 30, a fine of Rs. 5 per extra day is calculated.
+• For days greater than 30, Rs. 5 per day is applied up to 30 days, and Rs. 50 per day is
+applied thereafter.
+4. Status Update: If the book is returned, Status is updated to 'R'.
+5. Fine Insertion: If a fine is applicable, an entry is added to the Fine table.
+6. Exception Handling: Handles cases where no matching record is found or other errors.
+Execution
+This PL/SQL code block includes both control structures and exception handling to manage errors 
+and conditions specified in the problem statement.
+
+---------------------
+DECLARE (Declaration Section)
+Purpose: The DECLARE section is where you define all your variables, constants, cursors, exceptions, and other elements that you want to use in your PL/SQL block.
+When used: It is used at the very beginning of the block (before the BEGIN section).
+What to define: You define local variables, cursors, and exceptions in this section. Variables are used to store data, and cursors are used to handle queries and fetch multiple rows.
+
+ BEGIN (Executable Section)
+Purpose: The BEGIN section contains the actual logic of the program—the statements that get executed. This is where you perform operations such as querying the database, updating records, performing calculations, etc.
+When used: The BEGIN keyword marks the start of the block of executable statements.
+What happens here: The logic for data manipulation (INSERT, UPDATE, SELECT, DELETE) or any computational work happens here.
+
+ EXCEPTION (Exception Handling Section)
+Purpose: The EXCEPTION section is where you handle any errors (exceptions) that may occur during the execution of the program.
+When used: It is used at the end of the PL/SQL block (after the BEGIN section) to catch and handle runtime errors or exceptions that may arise during execution.
+What happens here: You can specify different types of exceptions to handle specific errors, such as a NO_DATA_FOUND exception, or use a generic handler for other types of errors.

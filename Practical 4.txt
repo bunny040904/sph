@@ -1,0 +1,93 @@
+Practical 4
+4. Perform Following
+1. Create a table Employee with fields-
+ Eno - Primary key and apply sequence starts with 101.
+ Ename – not null
+ Address – default „Nashik‟
+ Join_Date
+ Post
+ Salary -check>5000
+2. Create another table Emp_Project with field-
+ Eno – Foriegn key
+ Project_name
+ LOC(i.e Line of code)
+3. Create index on Ename field of employee table.
+4. Create View on Employee table to show only Employee name, its post and salary.
+Perform the following querries:
+1. To find the employeename whose salary is greater than or equal to 6000.
+2. Find Employee name whose salary is 3000.
+3. Find name and Join_Date from table having salary<5000.
+--------------------------------------------------------------------------
+
+--- Create the Employee Table
+• Eno as the primary key with a sequence starting at 101.
+• Ename as a NOT NULL field.
+• Address with a default value of "Nashik."
+• Salary with a check constraint ensuring it is greater than 5000.
+
+
+CREATE TABLE Employee (
+ Eno INT PRIMARY KEY AUTO_INCREMENT,
+ Ename VARCHAR(50) NOT NULL,
+ Address VARCHAR(100) DEFAULT 'Nashik',
+ Join_Date DATE,
+ Post VARCHAR(50),
+ Salary DECIMAL(10, 2) CHECK (Salary > 5000)
+);
+
+-- Set the initial value of Eno to start from 101
+ALTER TABLE Employee AUTO_INCREMENT = 101;
+
+2. Create the Emp_Project Table
+• Eno as a foreign key referencing the Employee table.
+• Project_name and LOC (Line of Code).
+
+CREATE TABLE Emp_Project (
+ Eno INT,
+ Project_name VARCHAR(100),
+ LOC INT,
+ FOREIGN KEY (Eno) REFERENCES Employee(Eno)
+);
+
+INSERT INTO Employee (Ename, Address, Join_Date, Post, Salary) 
+VALUES 
+('John Doe', 'Nashik', '2020-01-15', 'Manager', 7000.00),
+('Jane Smith', 'Pune', '2019-03-20', 'Salesman', 6500.00),
+('Alex Brown', 'Mumbai', '2021-07-30', 'Developer', 8000.00),
+('Emily White', 'Nashik', '2018-12-10', 'Tester', 4000.00),
+('Chris Green', 'Delhi', '2022-05-10', 'Salesman', 5500.00);
+
+
+INSERT INTO Emp_Project (Eno, Project_name, LOC) 
+VALUES 
+(101, 'Project A', 1200),
+(102, 'Project B', 1500),
+(103, 'Project C', 2000),
+(104, 'Project D', 800),
+(105, 'Project E', 950);
+
+3. Create Index on Ename Field of Employee Table
+CREATE INDEX idx_ename ON Employee(Ename);
+
+4. Create a View on the Employee Table
+• This view will display only Ename, Post, and Salary.
+CREATE VIEW Employee_View AS
+SELECT Ename, Post, Salary 
+FROM Employee;
+
+Queries
+1. Find the employee names whose salary is greater than or equal to 6000
+
+SELECT Ename 
+FROM Employee 
+WHERE Salary >= 6000;
+
+2. Find the employee names whose salary is 3000
+SELECT Ename 
+FROM Employee 
+WHERE Salary = 3000;
+
+3. Find name and Join_Date from the table where salary is less than 5000
+SELECT Ename, Join_Date 
+FROM Employee 
+WHERE Salary < 5000;

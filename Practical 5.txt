@@ -1,0 +1,114 @@
+Practical 5th
+
+//Consider the following two tables:
+a) Persons table is as follow:
+Pid Last name First name    Address     City
+1   Amit        Tiwari       kharadi    Pune
+2  Suresh       Mishra       Gangapur  Nashik
+3   Shalu      Choudhary      savedi  Ahmednagar
+
+a)  Order Table is as follows:
+O_id Order_Date    Order_Price P_id
+1     2023-02-11      1000       3
+2     2023-03-12      1600        3
+3      2023-04-10      700        1
+4      2022-07-24     300         1
+5       2022-08-30    2000      NULL
+a. Apply inner Join on above tables and show the result
+b. Apply Left Join (or left outer join) on above tables and show the result.
+c. Apply Right Join (or right outer join) on above tables and show the result.//
+---------------------------------------------------------------------------------------------
+
+CREATE DATABASE StoreDB;
+USE StoreDB;  -- Switch to the newly created database
+
+-- Create Persons table
+CREATE TABLE Persons (
+    Pid INT PRIMARY KEY,
+    LastName VARCHAR(50),
+    FirstName VARCHAR(50),
+    Address VARCHAR(100),
+    City VARCHAR(50)
+);
+
+-- Create Orders table
+CREATE TABLE Orders (
+    O_id INT PRIMARY KEY,
+    Order_Date DATE,
+    Order_Price DECIMAL(10, 2),
+    P_id INT);
+
+-- Insert data into Persons table
+INSERT INTO Persons (Pid, LastName, FirstName, Address, City) VALUES
+(1, 'Tiwari', 'Amit', 'kharadi', 'Pune'),
+(2, 'Mishra', 'Suresh', 'gangapur', 'Nashik'),
+(3, 'Choudhary', 'Shalu', 'savedi', 'Ahmednagar');
+
+-- Insert data into Orders table
+INSERT INTO Orders (O_id, Order_Date, Order_Price, P_id) VALUES
+(1, '2023-02-11', 1000, 3),
+(2, '2023-03-12', 1600, 3),
+(3, '2023-04-10', 700, 1),
+(4, '2022-07-24', 300, 1),
+(5, '2022-08-30', 2000, NULL); 
+
+--- Apply INNER JOIN
+
+SELECT 
+    p.Pid,
+    p.LastName,
+    p.FirstName,
+    p.Address,
+    p.City,
+    o.O_id,
+    o.Order_Date,
+    o.Order_Price
+FROM 
+    Persons p
+INNER JOIN 
+    Orders o ON p.Pid = o.P_id;
+//The Pid column from the Persons table is matched with the P_id column from the Orders table. This indicates that the query will pair each person with their corresponding order based on the person’s Pid (person ID) and the P_id (person ID in the Orders table).
+
+ ----Apply LEFT JOIN
+SELECT 
+    p.Pid,
+    p.LastName,
+    p.FirstName,
+    p.Address,
+    p.City,
+    o.O_id,
+    o.Order_Date,
+    o.Order_Price
+FROM 
+    Persons p
+LEFT JOIN 
+    Orders o ON p.Pid = o.P_id;
+//LEFT JOIN Orders o: The LEFT JOIN (or left outer join) combines rows from the Persons table with rows from the Orders table based on the join condition p.Pid = o.P_id.
+The key difference between LEFT JOIN and INNER JOIN is that a LEFT JOIN returns all rows from the left table (in this case, Persons), and the matching rows from the right table (in this case, Orders). If there is no match in the right table, the result will still include the row from the left table, but the columns from the right table (Orders) will have NULL values.
+//ON p.Pid = o.P_id: This specifies the condition for the join. It matches the Pid from the Persons table with the P_id from the Orders table.
+
+
+--- Apply RIGHT JOIN
+
+SELECT 
+    p.Pid,
+    p.LastName,
+    p.FirstName,
+    p.Address,
+    p.City,
+    o.O_id,
+    o.Order_Date,
+    o.Order_Price
+FROM 
+    Persons p
+RIGHT JOIN 
+    Orders o ON p.Pid = o.P_id;
+
+//RIGHT JOIN Orders o: The RIGHT JOIN returns all records from the right table (Orders), along with matching records from the left table (Persons). If there is no match for a particular order in the Persons table, the result will still include the order details, but the Persons table columns will be filled with NULL values.
+The alias o is used to refer to the Orders table.
+//ON p.Pid = o.P_id: This specifies the condition that links the two tables. The query will match Pid from the Persons table with P_id from the Orders table
+--------------------------------------------------------------------------
+
+INNER JOIN: Displays only those persons who have placed orders.
+LEFT JOIN: Displays all persons, showing NULL for orders where there is no match.
+RIGHT JOIN: Displays all orders, including those with NULL for persons when there's no match.
